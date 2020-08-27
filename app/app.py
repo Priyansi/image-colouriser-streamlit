@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt  # To plot the image
 import altair as alt  # To plot the label ranking
 import io
 from PIL import Image
-from app.torch_utils import transform_image, get_prediction
+from torch_utils import transform_image, get_prediction
 
 st.title("Image Colouriser")
 
