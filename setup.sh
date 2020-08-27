@@ -7,7 +7,7 @@ email = \"priyanhiman@gmail.com\"\n\
 
 echo "\                       
 [server]\n\                       
-port = 5000\n\                       
+port = $PORT\n\                       
 enableCORS = false\n\                       
 headless = true\n\                       
 \n\                       
