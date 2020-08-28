@@ -90,6 +90,23 @@ class Encoder_Decoder(BaseModel):
         return self.network(images)
 
 
+def load_checkpoint_fruits(filepath):
+    checkpoint = torch.load(filepath, map_location='cpu')
+    model = checkpoint['model']
+    model.load_state_dict(checkpoint['state_dict'])
+    model.eval()
+
+    return model
+
+
+def load_checkpoint_scenary(filepath):
+    model = Encoder_Decoder()
+    model.load_state_dict(torch.load(filepath, map_location='cpu'))
+    model.eval()
+
+    return model
+
+
 def transform_image(image):
     test_transforms = T.Compose([T.Resize((256, 256)), T.ToTensor()])
     return test_transforms(image)
@@ -106,17 +123,19 @@ def to_rgb(grayscale_input, ab_output, save_path=None, save_name=None):
     return color_image
 
 
-def get_prediction(image):
+def get_prediction(image, m):
     l_img = rgb2lab(image.permute(1, 2, 0))[:, :, 0]
     l_img = torch.tensor(l_img).type(
         torch.FloatTensor).unsqueeze(0).unsqueeze(0)
+    if m == 'f':
+        model = load_checkpoint_fruits(PATH_FRUITS)
+    else:
+        model = load_checkpoint_scenary(PATH_SCENARY)
     ab_img = model(l_img)
     l_img = l_img.squeeze(0)
     ab_img = ab_img.squeeze(0)
     return to_rgb(l_img.detach(), ab_img.detach())
 
 
-PATH = 'app/model.pth'
-model = Encoder_Decoder()
-model.load_state_dict(torch.load(PATH, map_location='cpu'))
-model.eval()
+PATH_FRUITS = 'app/fruits.pth'
+PATH_SCENARY = 'app/scenary.pth'
