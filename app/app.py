@@ -46,12 +46,25 @@ def get_image_download_link(img):
     return href
 
 
+def plot_results(tensor, prediction):
+    f, arr = plt.subplots(1, 2, sharey=True)
+    arr[0].imshow(tensor.permute(1, 2, 0))
+    arr[0].axis('off')
+    arr[0].title.set_text('Before')
+    arr[1].imshow(prediction)
+    arr[1].axis('off')
+    arr[1].title.set_text('After')
+    st.pyplot()
+
+
 image_data = st.file_uploader("Upload file", type=["jpg", "png", "jpeg"])
 
 st.markdown("<p style='text-align: center;'>OR</p>",
             unsafe_allow_html=True)
 
 image_url = st.text_input("URL : ")
+
+
 if image_data is None and image_url:
     try:
         response = requests.get(image_url)
@@ -76,13 +89,6 @@ if image_data is not None:
             # if download:
             st.markdown(get_image_download_link(
                 result), unsafe_allow_html=True)
-            f, arr = plt.subplots(1, 2, sharey=True)
-            arr[0].imshow(tensor.permute(1, 2, 0))
-            arr[0].axis('off')
-            arr[0].title.set_text('Before')
-            arr[1].imshow(prediction)
-            arr[1].axis('off')
-            arr[1].title.set_text('After')
-            st.pyplot()
+            plot_results(tensor, prediction)
     except:
         st.write("Error opening image. Please try again.")
