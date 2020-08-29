@@ -90,16 +90,7 @@ class Encoder_Decoder(BaseModel):
         return self.network(images)
 
 
-def load_checkpoint_fruits(filepath):
-    checkpoint = torch.load(filepath, map_location='cpu')
-    model = checkpoint['model']
-    model.load_state_dict(checkpoint['state_dict'])
-    model.eval()
-
-    return model
-
-
-def load_checkpoint_scenary(filepath):
+def load_checkpoint(filepath):
     model = Encoder_Decoder()
     model.load_state_dict(torch.load(filepath, map_location='cpu'))
     model.eval()
@@ -127,10 +118,8 @@ def get_prediction(image, m):
     l_img = rgb2lab(image.permute(1, 2, 0))[:, :, 0]
     l_img = torch.tensor(l_img).type(
         torch.FloatTensor).unsqueeze(0).unsqueeze(0)
-    if m == 'f':
-        model = load_checkpoint_fruits(PATH_FRUITS)
-    else:
-        model = load_checkpoint_scenary(PATH_SCENARY)
+    PATH = PATH_FRUITS if m == 'f' else PATH_SCENARY
+    model = load_checkpoint(PATH)
     ab_img = model(l_img)
     l_img = l_img.squeeze(0)
     ab_img = ab_img.squeeze(0)
