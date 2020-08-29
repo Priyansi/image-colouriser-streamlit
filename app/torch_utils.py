@@ -110,7 +110,6 @@ def to_rgb(grayscale_input, ab_output, save_path=None, save_name=None):
     color_image[:, :, 0:1] = color_image[:, :, 0:1]
     color_image[:, :, 1:3] = (color_image[:, :, 1:3]) * 128
     color_image = lab2rgb(color_image.astype(np.float64))
-    grayscale_input = grayscale_input.squeeze().numpy()
     return color_image
 
 
