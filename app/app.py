@@ -85,7 +85,7 @@ if image_data is not None:
             elif model == 'Clothes and People':
                 m = 'c'
             else:
-                m = 's'
+                m = 'l'
             tensor = convert_to_tensor(image)
             prediction = predict(tensor, m)
             result = Image.fromarray((prediction*255).astype(np.uint8))

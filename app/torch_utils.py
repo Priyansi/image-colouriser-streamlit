@@ -122,7 +122,7 @@ def get_prediction(image, m):
     elif m == 'c':
         PATH = PATH_CLOTHES
     else:
-        PATH = PATH_SCENARY
+        PATH = PATH_LANDSCAPES
     model = load_checkpoint(PATH)
     ab_img = model(l_img)
     l_img = l_img.squeeze(0)
@@ -131,5 +131,5 @@ def get_prediction(image, m):
 
 
 PATH_FRUITS = 'app/fruits.pth'
-PATH_SCENARY = 'app/scenary.pth'
+PATH_LANDSCAPES = 'app/landscapes.pth'
 PATH_CLOTHES = 'app/clothes.pth'
