@@ -1,9 +1,8 @@
-import io
 import torch
 import torchvision.transforms as T
+import torch.nn.functional as F
 import torch.nn as nn
-from skimage.color import rgb2lab, lab2rgb, rgb2gray
-from PIL import Image
+from skimage.color import rgb2lab, lab2rgb
 import numpy as np
 
 
@@ -12,7 +11,7 @@ def generate_l_ab(images):
     X = lab[:, :, :, 0]
     X = X.reshape(X.shape+(1,))
     Y = lab[:, :, :, 1:] / 128
-    return to_device(torch.tensor(X, dtype=torch.float).permute(0, 3, 1, 2), device), to_device(torch.tensor(Y, dtype=torch.float).permute(0, 3, 1, 2), device)
+    return torch.tensor(X, dtype=torch.float).permute(0, 3, 1, 2), torch.tensor(Y, dtype=torch.float).permute(0, 3, 1, 2)
 
 
 def get_padding(kernel_size: int, stride: int = 1, dilation: int = 1, **_) -> int:
@@ -40,7 +39,7 @@ class BaseModel(nn.Module):
         return {'epoch_loss': epoch_loss}
 
 
-class Encoder_Decoder(BaseModel):
+class Encoder_Decoder(BaseModel):  # the autoencoder
     def __init__(self):
         super().__init__()
         self.network = nn.Sequential(
@@ -90,7 +89,7 @@ class Encoder_Decoder(BaseModel):
         return self.network(images)
 
 
-def load_checkpoint(filepath):
+def load_checkpoint(filepath):  # loading the pretrained weights
     model = Encoder_Decoder()
     model.load_state_dict(torch.load(filepath, map_location='cpu'))
     model.eval()
@@ -98,12 +97,12 @@ def load_checkpoint(filepath):
     return model
 
 
-def transform_image(image):
+def transform_image(image):  # convert all images into a similar size
     test_transforms = T.Compose([T.Resize((256, 256)), T.ToTensor()])
     return test_transforms(image)
 
 
-def to_rgb(grayscale_input, ab_output, save_path=None, save_name=None):
+def to_rgb(grayscale_input, ab_output):
     color_image = torch.cat((grayscale_input, ab_output),
                             0).numpy()  # combine channels
     color_image = color_image.transpose((1, 2, 0))  # rescale for matplotlib
@@ -113,11 +112,17 @@ def to_rgb(grayscale_input, ab_output, save_path=None, save_name=None):
     return color_image
 
 
+# given the kind of input, chooses the model to predic on, returns a numpy array
 def get_prediction(image, m):
     l_img = rgb2lab(image.permute(1, 2, 0))[:, :, 0]
     l_img = torch.tensor(l_img).type(
         torch.FloatTensor).unsqueeze(0).unsqueeze(0)
-    PATH = PATH_FRUITS if m == 'f' else PATH_SCENARY
+    if m == 'f':
+        PATH = PATH_FRUITS
+    elif m == 'c':
+        PATH = PATH_CLOTHES
+    else:
+        PATH = PATH_SCENARY
     model = load_checkpoint(PATH)
     ab_img = model(l_img)
     l_img = l_img.squeeze(0)
@@ -127,3 +132,4 @@ def get_prediction(image, m):
 
 PATH_FRUITS = 'app/fruits.pth'
 PATH_SCENARY = 'app/scenary.pth'
+PATH_CLOTHES = 'app/clothes.pth'

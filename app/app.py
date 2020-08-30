@@ -1,10 +1,9 @@
 import numpy as np
 from torch_utils import transform_image, get_prediction
 from PIL import Image
-import altair as alt  # To plot the label ranking
-import matplotlib.pyplot as plt  # To plot the image
+import matplotlib.pyplot as plt  # To plot the before and after image
 import streamlit as st
-import requests
+import requests  # For extracting image from URLs
 from io import BytesIO
 import base64
 
@@ -78,15 +77,18 @@ if image_data is not None:
         st.write(
             '<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
         model = st.radio("Colourise with model trained on",
-                         ('Landscapes', 'Fruits'))
+                         ('Landscapes', 'Fruits', 'Clothes and People'))
         colourise = st.button('Colourise')
         if colourise:
-            m = 'f' if model == 'Fruits' else 's'
+            if model == 'Fruits':
+                m = 'f'
+            elif model == 'Clothes and People':
+                m = 'c'
+            else:
+                m = 's'
             tensor = convert_to_tensor(image)
             prediction = predict(tensor, m)
             result = Image.fromarray((prediction*255).astype(np.uint8))
-            # download = st.button('Download Result')
-            # if download:
             st.markdown(get_image_download_link(
                 result), unsafe_allow_html=True)
             plot_results(tensor, prediction)
