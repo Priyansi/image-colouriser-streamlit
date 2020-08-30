@@ -1,5 +1,5 @@
 import numpy as np
-from torch_utils import transform_image, get_prediction
+from torch_utils import transform_image, transform_tensor_pil, get_prediction
 from PIL import Image
 import matplotlib.pyplot as plt  # To plot the before and after image
 import streamlit as st
@@ -37,11 +37,11 @@ def convert_to_tensor(image):
     return tensor
 
 
-def get_image_download_link(img):
+def get_image_download_link(img, img_type):
     buffered = BytesIO()
     img.save(buffered, format="JPEG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
-    href = f'<a download="result.png" href="data:file/jpg;base64,{img_str}">Download result</a>'
+    href = f'<a download="{img_type}.png" href="data:file/jpg;base64,{img_str}">Download {img_type}</a>'
     return href
 
 
@@ -90,7 +90,9 @@ if image_data is not None:
             prediction = predict(tensor, m)
             result = Image.fromarray((prediction*255).astype(np.uint8))
             st.markdown(get_image_download_link(
-                result), unsafe_allow_html=True)
+                transform_tensor_pil(tensor), 'original'), unsafe_allow_html=True)
+            st.markdown(get_image_download_link(
+                result, 'result'), unsafe_allow_html=True)
             plot_results(tensor, prediction)
     except:
         st.write("Error opening image. Please try again.")

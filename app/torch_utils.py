@@ -97,6 +97,10 @@ def load_checkpoint(filepath):  # loading the pretrained weights
     return model
 
 
+def transform_tensor_pil(tensor):
+    return T.ToPILImage()(tensor.squeeze_(0))
+
+
 def transform_image(image):  # convert all images into a similar size
     test_transforms = T.Compose([T.Resize((256, 256)), T.ToTensor()])
     return test_transforms(image)
