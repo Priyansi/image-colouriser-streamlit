@@ -89,8 +89,8 @@ if image_data is not None:
             tensor = convert_to_tensor(image)
             prediction = predict(tensor, m)
             result = Image.fromarray((prediction*255).astype(np.uint8))
-            st.markdown(get_image_download_link(
-                transform_tensor_pil(tensor), 'original'), unsafe_allow_html=True)
+            # st.markdown(get_image_download_link(
+            #     transform_tensor_pil(tensor), 'original'), unsafe_allow_html=True)
             st.markdown(get_image_download_link(
                 result, 'result'), unsafe_allow_html=True)
             plot_results(tensor, prediction)
