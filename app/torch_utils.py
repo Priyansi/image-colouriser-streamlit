@@ -2,6 +2,7 @@ import torch
 import torchvision.transforms as T
 import torch.nn.functional as F
 import torch.nn as nn
+import torchvision.models as models
 from skimage.color import rgb2lab, lab2rgb
 import numpy as np
 
@@ -19,7 +20,7 @@ def get_padding(kernel_size: int, stride: int = 1, dilation: int = 1, **_) -> in
     return padding
 
 
-class BaseModel(nn.Module):
+class Base_Model(nn.Module):
     def training_batch(self, batch):
         images, _ = batch
         X, Y = generate_l_ab(images)
@@ -39,7 +40,7 @@ class BaseModel(nn.Module):
         return {'epoch_loss': epoch_loss}
 
 
-class Encoder_Decoder(BaseModel):  # the autoencoder
+class Encoder_Decoderv1(Base_Model):  # the autoencoder
     def __init__(self):
         super().__init__()
         self.network = nn.Sequential(
@@ -89,8 +90,48 @@ class Encoder_Decoder(BaseModel):  # the autoencoder
         return self.network(images)
 
 
-def load_checkpoint(filepath):  # loading the pretrained weights
-    model = Encoder_Decoder()
+class Encoder_Decoderv2(Base_Model):
+    def __init__(self, input_size=128):
+        super(Encoder_Decoderv2, self).__init__()
+        MIDLEVEL_FEATURE_SIZE = 128
+
+        resnet = models.resnet18(num_classes=365)
+        resnet.conv1.weight = nn.Parameter(
+            resnet.conv1.weight.sum(dim=1).unsqueeze(1))
+        self.midlevel_resnet = nn.Sequential(*list(resnet.children())[0:6])
+
+        self.upsample = nn.Sequential(
+            nn.Conv2d(MIDLEVEL_FEATURE_SIZE, 128,
+                      kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Upsample(scale_factor=2),
+            nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Upsample(scale_factor=2),
+            nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.Conv2d(32, 2, kernel_size=3, stride=1, padding=1),
+            nn.Upsample(scale_factor=2)
+        )
+
+    def forward(self, input):
+
+        # Pass input through ResNet-gray to extract features
+        midlevel_features = self.midlevel_resnet(input)
+
+        # Upsample to get colors
+        output = self.upsample(midlevel_features)
+        return output
+
+
+def load_checkpoint(filepath, m='l'):  # loading the pretrained weights
+    model = Encoder_Decoderv2() if m == 'a' else Encoder_Decoderv1()
     model.load_state_dict(torch.load(filepath, map_location='cpu'))
     model.eval()
 
@@ -116,18 +157,20 @@ def to_rgb(grayscale_input, ab_output):
     return color_image
 
 
-# given the kind of input, chooses the model to predic on, returns a numpy array
+# given the kind of input, chooses the model to predict on, returns a numpy array
 def get_prediction(image, m):
     l_img = rgb2lab(image.permute(1, 2, 0))[:, :, 0]
     l_img = torch.tensor(l_img).type(
         torch.FloatTensor).unsqueeze(0).unsqueeze(0)
-    if m == 'f':
+    if m == 'a':
+        PATH = PATH_ANIMALS
+    elif m == 'f':
         PATH = PATH_FRUITS
     elif m == 'c':
         PATH = PATH_CLOTHES
     else:
         PATH = PATH_LANDSCAPES
-    model = load_checkpoint(PATH)
+    model = load_checkpoint(PATH, m)
     ab_img = model(l_img)
     l_img = l_img.squeeze(0)
     ab_img = ab_img.squeeze(0)
@@ -137,3 +180,4 @@ def get_prediction(image, m):
 PATH_FRUITS = 'app/fruits.pth'
 PATH_LANDSCAPES = 'app/landscapes.pth'
 PATH_CLOTHES = 'app/clothes.pth'
+PATH_ANIMALS = 'app/animals.pth'
