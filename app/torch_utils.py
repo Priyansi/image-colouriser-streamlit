@@ -131,7 +131,7 @@ class Encoder_Decoderv2(Base_Model):
 
 
 def load_checkpoint(filepath, m='l'):  # loading the pretrained weights
-    model = Encoder_Decoderv2() if m == 'a' else Encoder_Decoderv1()
+    model = Encoder_Decoderv2() if m == 'a' or m == 'p' else Encoder_Decoderv1()
     model.load_state_dict(torch.load(filepath, map_location='cpu'))
     model.eval()
 
