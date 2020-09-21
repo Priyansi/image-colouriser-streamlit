@@ -166,8 +166,8 @@ def get_prediction(image, m):
         PATH = PATH_ANIMALS
     elif m == 'f':
         PATH = PATH_FRUITS
-    elif m == 'c':
-        PATH = PATH_CLOTHES
+    elif m == 'p':
+        PATH = PATH_PEOPLE
     else:
         PATH = PATH_LANDSCAPES
     model = load_checkpoint(PATH, m)
@@ -179,5 +179,5 @@ def get_prediction(image, m):
 
 PATH_FRUITS = 'app/fruits.pth'
 PATH_LANDSCAPES = 'app/landscapes.pth'
-PATH_CLOTHES = 'app/clothes.pth'
+PATH_PEOPLE = 'app/people.pth'
 PATH_ANIMALS = 'app/animals.pth'

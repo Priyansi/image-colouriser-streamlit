@@ -76,16 +76,18 @@ if image_data is not None:
         image = Image.open(image_data)
         st.write(
             '<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+        # model = st.sidebar.selectbox("Choose Model :",
+        #                              ('Landscapes', 'Animals', 'Fruits', 'People'))
         model = st.sidebar.selectbox("Choose Model :",
-                                     ('Landscapes', 'Animals', 'Fruits', 'Clothes and People'))
+                                     ('Landscapes', 'Fruits', 'People'))
         colourise = st.sidebar.button('Colourise')
         if colourise:
-            if model == 'Animals':
-                m = 'a'
-            elif model == 'Fruits':
+            # if model == 'Animals':
+            #     m = 'a'
+            if model == 'Fruits':
                 m = 'f'
-            elif model == 'Clothes and People':
-                m = 'c'
+            elif model == 'People':
+                m = 'p'
             else:
                 m = 'l'
             tensor = convert_to_tensor(image)
