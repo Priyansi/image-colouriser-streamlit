@@ -162,9 +162,9 @@ def get_prediction(image, m):
     l_img = rgb2lab(image.permute(1, 2, 0))[:, :, 0]
     l_img = torch.tensor(l_img).type(
         torch.FloatTensor).unsqueeze(0).unsqueeze(0)
-    # if m == 'a':
-    #     PATH = PATH_ANIMALS
-    if m == 'f':
+    if m == 'a':
+        PATH = PATH_ANIMALS
+    elif m == 'f':
         PATH = PATH_FRUITS
     elif m == 'p':
         PATH = PATH_PEOPLE
